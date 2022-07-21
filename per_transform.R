@@ -1,5 +1,4 @@
 #perform relative abundance transformation for microbiota data
-# code written by Brandie Wagner 04-03-2013
 
 per_transform =  function(mat)
 {
