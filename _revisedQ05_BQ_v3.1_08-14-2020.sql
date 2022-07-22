@@ -1,0 +1,222 @@
+/************************************************************************************************************
+ Project: R2D2
+ Question number: Question_0005
+ Question in Text:  Among adults hospitalized with COVID-19, how many had a Hispanic or LatinX ethnicity?
+ 
+ Database: BigQuery
+ OMOP CDM Version: 5.3
+ 
+ Author name: Diana Ir
+ Author GitHub username: dir0417
+ Author email: diana.ir@ucdenver.edu
+ Invested work hours at initial git commit: 15
+ Version : 3.1
+ Initial git commit date: 06/01/2020
+ Last modified date: 08/13/2020
+ 
+ INSTRUCTIONS: 
+ -------------
+ 
+ Initialize variables: 
+ i) Please change the site number of your site
+ ii) Please change threshold for minimum counts to be displayed in the results. Possible values are 0 or 11.
+ Default value is 0 (ie no cell suppression). When value is 11, result cell will display [1-10].
+ 
+ 
+ Section 1: Create a base cohort
+ 
+ Section 2: Prepare concept sets
+ 
+ Section 3: Design a main body
+ 
+ Section 4: Report in a tabular format
+ 
+ 
+ Updates in this version:
+ -------------------------
+ 1) Used R2D2 COVID-19 concept sets and hospitalization definition instead of local institutional definition
+ 2) Removed [0-17] age category
+ 3) Added additional columns as per Best Practice document (https://github.com/DBMI/R2D2-Queries/tree/master/BestPractice)
+ 4) All demographic categories are displayed in the results even if counts are 0
+ 5) Added result cell suppression logic
+ 
+ *************************************************************************************************************/
+/*********************** Initialize variables *****************/
+DECLARE sitename STRING DEFAULT 'Site07';
+
+DECLARE minallowedcellcount INT64 DEFAULT 11;
+
+--Threshold for minimum counts displayed in results. Possible values are 0 or 11
+/********************************************************/
+-------- do not update ---------
+DECLARE queryversion NUMERIC DEFAULT 3.1;
+
+DECLARE queryexecutiondate date DEFAULT (
+    SELECT
+        CURRENT_DATE()
+);
+
+/************************************************************************************************************* 
+ Section 1: Get COVID hospitalizations using R2D2 concept sets 
+ **************************************************************************************************************/
+--- gets COVID hospitalizations
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6micovid_hsp AS
+SELECT
+    *
+FROM
+    r2d2_query_cohorts.covid_inpatient_hosp_encounters;
+
+/************************************************************************************************************* 
+ Section 2: Concept sets specific to question (R2D2 Atlas)
+ **************************************************************************************************************/
+--	No question specific concept sets required
+/************************************************************************************************************* 
+ Section 3: Among adults hospitalized with COVID-19, how does the in-hospital mortality rate compare 
+ per subgroup (age, ethnicity, gender and race)?
+ **************************************************************************************************************/
+-- ETHNICITY
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6miethnicity AS
+SELECT
+    concept_id covariate_id,
+    domain_id covariate_name,
+    concept_name covariate_value
+FROM
+    omop_covid19.concept
+WHERE
+    LOWER(domain_id) = 'ethnicity'
+    AND standard_concept = 'S'
+UNION
+DISTINCT
+SELECT
+    0,
+    'Ethnicity',
+    'Unknown';
+
+-- PATIENTS
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6mipatients AS
+SELECT
+    DISTINCT hsp.visit_occurrence_id,
+    hsp.person_id,
+    hsp.visit_concept_id,
+    hsp.visit_start_datetime,
+    hsp.visit_end_datetime,
+    0 outcome_id,
+    0 AS exposure_variable_id,
+    CASE
+        WHEN ethnicity.covariate_id IS NULL THEN 0
+        ELSE p.ethnicity_concept_id
+    END ethnicity_concept_id
+FROM
+    temp_covid_scratch.zvvek6micovid_hsp hsp
+    LEFT JOIN omop_covid19.person p ON p.person_id = hsp.person_id
+    LEFT JOIN temp_covid_scratch.zvvek6miethnicity ethnicity ON ethnicity.covariate_id = p.ethnicity_concept_id;
+
+/**************************************************************************************************
+ Section 4:			Results
+ **************************************************************************************************/
+--------------------------------------
+--Section A: Results setup
+--------------------------------------
+-- Exposure Variable
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6miexposure_variable AS
+SELECT
+    0 exposure_variable_id,
+    'none' exposure_variable_name,
+    'none' exposure_variable_value;
+
+-- Outcome
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6mioutcome AS
+SELECT
+    0 outcome_id,
+    'none' outcome_name,
+    'none' outcome_value;
+
+--------------------------------------
+--Section B: Results
+--------------------------------------
+CREATE
+OR REPLACE TABLE temp_covid_scratch.zvvek6miresults AS
+SELECT
+    --Ethnicity
+    sitename institution,
+    m.covariate_name,
+    m.covariate_value,
+    m.exposure_variable_name,
+    m.exposure_variable_value,
+    m.outcome_name outcome_name,
+    m.outcome_value outcome_value,
+    COUNT(DISTINCT visit_occurrence_id) encountercount,
+    COUNT(DISTINCT person_id) patientcount,
+    queryversion query_version,
+    queryexecutiondate query_execution_date
+FROM
+    (
+        SELECT
+            *
+        FROM
+            temp_covid_scratch.zvvek6miethnicity
+            CROSS JOIN temp_covid_scratch.zvvek6miexposure_variable
+            CROSS JOIN temp_covid_scratch.zvvek6mioutcome
+    ) m
+    LEFT JOIN temp_covid_scratch.zvvek6mipatients p ON m.exposure_variable_id = p.exposure_variable_id
+    AND m.outcome_id = p.outcome_id
+    AND m.covariate_id = p.ethnicity_concept_id
+GROUP BY
+    m.covariate_name,
+    m.covariate_value,
+    m.exposure_variable_name,
+    m.exposure_variable_value,
+    m.outcome_name,
+    m.outcome_value
+ORDER BY
+    exposure_variable_name,
+    covariate_name,
+    covariate_value,
+    exposure_variable_value,
+    outcome_name,
+    outcome_value;
+
+--- Mask cell counts 
+SELECT
+    institution AS Institution,
+    covariate_name,
+    covariate_value,
+    exposure_variable_name AS Exposure_variable_name,
+    exposure_variable_value AS Exposure_variable_value,
+    outcome_name AS Outcome_name,
+    outcome_value AS Outcome_value,
+    CASE
+        WHEN minallowedcellcount = 0 THEN SAFE_CAST(encountercount AS STRING)
+        WHEN minallowedcellcount = 11
+        AND encountercount BETWEEN 1
+        AND 10 THEN '[1-10]'
+        WHEN minallowedcellcount = 11
+        AND encountercount = 0
+        OR encountercount >= 11 THEN SAFE_CAST(encountercount AS STRING)
+    END AS EncounterCount,
+    CASE
+        WHEN minallowedcellcount = 0 THEN SAFE_CAST(patientcount AS STRING)
+        WHEN minallowedcellcount = 11
+        AND patientcount BETWEEN 1
+        AND 10 THEN '[1-10]'
+        WHEN minallowedcellcount = 11
+        AND patientcount = 0
+        OR patientcount >= 11 THEN SAFE_CAST(patientcount AS STRING)
+    END AS PatientCount,
+    query_version AS Query_Version,
+    query_execution_date AS Query_Execution_Date
+FROM
+    temp_covid_scratch.zvvek6miresults
+ORDER BY
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7;
