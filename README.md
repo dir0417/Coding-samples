@@ -4,6 +4,7 @@
 - R / Rstudio - intermediate
 - GBQ (google SQL) - intermediate
 - bash coding
+- WDL workflow
 - examples of working documents
 - examples of data analysis
 
