@@ -3,6 +3,7 @@
 - Python - intermediate
 - R / Rstudio - intermediate
 - GBQ (google SQL) - intermediate
+- bash coding
 - examples of working documents
 - examples of data analysis
 
