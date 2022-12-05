@@ -10,6 +10,6 @@
 
 Nextstrain visualizations = https://nextstrain.org/
 Nextflow training = https://training.seqera.io/
-OHDSI = https://www.ohdsi.org/
+OHDSI = [https://www.ohdsi.org/](https://github.com/OHDSI/)
 
 ***please make note that I have removed a lot of HIPPA privacy or sensitive information on these codes due to departmental policies***
