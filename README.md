@@ -1,8 +1,8 @@
 
 ## coding samples
-- Python - intermediate
-- R / Rstudio - intermediate
-- GBQ (google SQL) - intermediate
+- Python - comfortable, but not expert
+- R / Rstudio - comfortable, but not expert
+- GBQ (google SQL) - comfortable, but not expert
 - bash coding
 - WDL workflow
 - examples of working documents
