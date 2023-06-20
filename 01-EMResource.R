@@ -5,6 +5,7 @@
 #
 setwd("C:/Users/dair/Documents/R Scripts")
 readRenviron("C:/Users/dair/Documents/R Scripts/.Renviron")
+
 #output test 1 ------------
 args = commandArgs(trailingOnly = TRUE)
 message(sprintf("Hello %s", args[1L]))
@@ -35,7 +36,7 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Chrome )(\\d+\\.){3}")
-#     
+# 
 #     ## on Windows a plattform-specific bug prevents us from calling the Google Chrome binary directly to get its version number
 #     ## cf. https://bugs.chromium.org/p/chromium/issues/detail?id=158372
 #   } else if ( xfun::is_windows() ) {
@@ -45,9 +46,9 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
-#     
+# 
 #   } else rlang::abort(message = "Your OS couldn't be determined (Linux, macOS, Windows) or is not supported!")
-#   
+# 
 #   # ... and determine most recent ChromeDriver version matching it
 #   chrome_driver_version %>%
 #     magrittr::extract(!is.na(.)) %>%
@@ -73,10 +74,10 @@ pacman::p_load(
 #     v <- length(versions) + 1
 #     while (v && (is.null(rD) || inherits(rD, "condition"))) {
 #       v <- v - 1  # Try each value
-#       rD <<- tryCatch(rsDriver(verbose = verbose, 
-#                                port = port + sample(0:1000, 1), 
+#       rD <<- tryCatch(rsDriver(verbose = verbose,
+#                                port = port + sample(0:1000, 1),
 #                                chromever=versions[v],
-#                                geckover = NULL, 
+#                                geckover = NULL,
 #                                phantomver = NULL), error = function(e) e,
 #                       message = function(m) m)
 #     }
@@ -95,6 +96,7 @@ pacman::p_load(
 # 
 # 
 # remDr <- getrsDriver()$client
+# 
 
 
 # starting a Selenium chrome browser ---------
@@ -593,4 +595,3 @@ saveData(regionDF_week)
 sqlQuery(SQLconn, 
          "SELECT COUNT(DISTINCT WeeklyRecordID)
          FROM Event_snapshot_weekly;")
-
