@@ -305,7 +305,7 @@ regionTables <- lapply(regionTables, function(x) {
          # "Staffing Shortage Other Staff",
          # "Visitation in Place",
          "Current Residents",
-         "Resident Omicron Bivalent Doses",
+         "Resident Updated Bivalent Doses",
          "Up-to-Date Residents",
          "Not Up-to-Date Residents",
          "Not Vaccinated Residents",
@@ -359,7 +359,7 @@ colnames <- c("Resource_facility_name",
               # "Staffing_Shortage_Other_Staff",
               # # "Visitation_in_Place",
               "Current_Total_Residents",
-              "Omicron_Bivalent_Doses_Residents",
+              "Bivalent_Doses_Residents",
               "Up_to_Date_Residents",
               "Not_Up_to_Date_Residents",
               "Not_Vaxxed_Residents",
@@ -497,4 +497,3 @@ saveData(regionDF)
 sqlQuery(SQLconn, 
          "SELECT COUNT(DISTINCT DailyRecordID)
          FROM Event_snapshot_GHICF;")
-

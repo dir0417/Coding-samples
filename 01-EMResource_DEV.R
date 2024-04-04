@@ -2,7 +2,8 @@
 
 # Written by Adreanna Early, CDPHE
 # adreanna.early@state.co.us
-#
+
+
 setwd("C:/Users/dair/Documents/R Scripts")
 readRenviron("C:/Users/dair/Documents/R Scripts/.Renviron")
 
@@ -14,7 +15,7 @@ message(sprintf("Hello %s", args[1L]))
 pacman::p_load(
   pacman,
   RSelenium,
-  lubridate, 
+  lubridate,
   dplyr,
   rvest,
   RODBC,
@@ -36,7 +37,7 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Chrome )(\\d+\\.){3}")
-# 
+#     
 #     ## on Windows a plattform-specific bug prevents us from calling the Google Chrome binary directly to get its version number
 #     ## cf. https://bugs.chromium.org/p/chromium/issues/detail?id=158372
 #   } else if ( xfun::is_windows() ) {
@@ -46,9 +47,9 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
-# 
+#     
 #   } else rlang::abort(message = "Your OS couldn't be determined (Linux, macOS, Windows) or is not supported!")
-# 
+#   
 #   # ... and determine most recent ChromeDriver version matching it
 #   chrome_driver_version %>%
 #     magrittr::extract(!is.na(.)) %>%
@@ -74,10 +75,10 @@ pacman::p_load(
 #     v <- length(versions) + 1
 #     while (v && (is.null(rD) || inherits(rD, "condition"))) {
 #       v <- v - 1  # Try each value
-#       rD <<- tryCatch(rsDriver(verbose = verbose,
-#                                port = port + sample(0:1000, 1),
+#       rD <<- tryCatch(rsDriver(verbose = verbose, 
+#                                port = port + sample(0:1000, 1), 
 #                                chromever=versions[v],
-#                                geckover = NULL,
+#                                geckover = NULL, 
 #                                phantomver = NULL), error = function(e) e,
 #                       message = function(m) m)
 #     }
@@ -96,7 +97,6 @@ pacman::p_load(
 # 
 # 
 # remDr <- getrsDriver()$client
-# 
 
 
 # starting a Selenium chrome browser ---------
@@ -107,7 +107,7 @@ username <- Sys.getenv("juvare_username")
 password <- Sys.getenv("juvare_password")
 
 # connect to chrome
-rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4444L)
+rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4585L)
 # check chrome versions:
 binman::list_versions("chromedriver")
 # if port blocked or need to use random port, use port = netstat::free_port() 
@@ -298,7 +298,7 @@ regionTables <- lapply(regionTables, function(x) {
          "PICU - Available (current)",
          "NICU - Available (current)",
          "ICU Bed Shortage (anticipated)", 
-         "Med/Surgical Bed Availability (current)",
+         "Med/Surgical Bed Availability (current)", 
          "Baseline Staffed-bed Capacity",
          "Ped Med/Surgical - Available (current)",
          "Med/Surgical Bed Shortage (anticipated)",
@@ -358,7 +358,7 @@ sapply(regionDF, class)
 
 ## MAKE SURE YOU DO THIS
 # # converting certain columns to numeric
-cols = c(2:10, 12, 13, 14)
+cols = c(2:10,12,13,14)
 regionDF[, cols] %<>% lapply(function(x) as.numeric(as.character(x)))
 
 
@@ -391,7 +391,8 @@ glimpse(regionDF)
 SQLusername <- Sys.getenv("sql_username")
 SQLpassword <- Sys.getenv("sql_password")
 
-SQLconn <-odbcConnect("CDPHESQP04", uid=SQLusername, pwd=SQLpassword)
+#SQLconn <-odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
+SQLconn <-odbcConnect("CDPHESQD04", uid=SQLusername, pwd=SQLpassword) 
 serverINFO <-odbcGetInfo(SQLconn) #get odbc db info
 
 # output test 4 ------
@@ -457,7 +458,7 @@ regionTables_week <- lapply(regionTables_week, function(x) {
          "Total # of ICU Capable Beds", 
          # "Maximum Acute Care Beds",
          "Total # of Acute Care Beds",
-         "Acute Care Inpatient Beds In-use", 
+         "Acute Care Inpatient Beds In-use",
          "Total # of PICU Beds",
          "Total # of NICU Beds",
          "License #  (State will populate)" ,
@@ -472,7 +473,7 @@ colnames_week <- c("Resource_facility_name",
                    "Total_Num_ICU_Capable_Beds",
                    # "Maximum_Acute_Care_Beds",
                    "Total_Num_Acute_Care_Beds",
-                   "Acute_Care_Inpatient_Beds_In_Use", 
+                   "Acute_Care_Inpatient_Beds_In_Use",
                    # "Vent_Medications", 
                    # "N95_Respirators",
                    # "Surgical_Procedure_Masks",
@@ -551,8 +552,8 @@ glimpse(regionDF_week)
 ## connect to Event_snapshot_weekly SQL DB ------
 SQLusername <- Sys.getenv("sql_username")
 SQLpassword <- Sys.getenv("sql_password")
-
-SQLconn <-odbcConnect("CDPHESQP04", uid=SQLusername, pwd=SQLpassword)
+SQLconn <-odbcConnect("CDPHESQD04", uid=SQLusername, pwd=SQLpassword) 
+#SQLconn <-SQLconn <- odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
 serverINFO <-odbcGetInfo(SQLconn) #get odbc db info
 
 # output test 5 ------
@@ -595,3 +596,4 @@ saveData(regionDF_week)
 sqlQuery(SQLconn, 
          "SELECT COUNT(DISTINCT WeeklyRecordID)
          FROM Event_snapshot_weekly;")
+

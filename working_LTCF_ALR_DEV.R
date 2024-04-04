@@ -1,8 +1,6 @@
 # Written by Adreanna Early, CDPHE
 # adreanna.early@state.co.us
 #
-setwd("C:/Users/dair/Documents/R Scripts")
-readRenviron("C:/Users/dair/Documents/R Scripts/.Renviron")
 
 #output test 1 ------------
 args = commandArgs(trailingOnly = TRUE)
@@ -104,7 +102,7 @@ username <- Sys.getenv("juvare_username")
 password <- Sys.getenv("juvare_password")
 
 # connect to chrome
-rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4444L)
+rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4585L)
 # check chrome versions:
 # binman::list_versions("chromedriver")
 # if port blocked or need to use random port, use port = netstat::free_port() 
@@ -300,7 +298,7 @@ regionTables <- lapply(regionTables, function(x) {
          # "Staffing Shortage Other Staff",
          # "Visitation in Place",
          "Current Residents",
-         "Resident Updated Bivalent Doses",
+         "Resident Omicron Bivalent Doses",
          "Up-to-Date Residents",
          "Not Up-to-Date Residents",
          "Not Vaccinated Residents",
@@ -313,8 +311,8 @@ regionTables <- lapply(regionTables, function(x) {
          # "Additional Dose or Booster for Resident",
          # "Current Staff Eligible for Booster",
          # "Additional Dose or Booster for Staff",
-         "Flu Vaccinated Staff",
-         "Flu Vaccinated Residents",
+         # "Flu Vaccinated Staff",
+         # "Flu Vaccinated Residents",
          "License #  (State will populate)",
          # "Oxygen",
          # "Oxygen Concentrators",
@@ -354,7 +352,7 @@ colnames <- c("Resource_facility_name",
               # "Staffing_Shortage_Other_Staff",
               # # "Visitation_in_Place",
               "Current_Total_Residents",
-              "Bivalent_Doses_Residents",
+              "Omicron_Bivalent_Doses_Residents",
               "Up_to_Date_Residents",
               "Not_Up_to_Date_Residents",
               "Not_Vaxxed_Residents",
@@ -367,8 +365,8 @@ colnames <- c("Resource_facility_name",
               # "Addtl_Dose_Booster_Resident",
               # "Current_Staff_Eligible_for_Booster",
               # "Addtl_Dose_Booster_Staff",
-              "Flu_Vaccinated_Staff",
-              "Flu_Vaccinated_Residents",	
+              # "Flu_Vaccinated_Staff",
+              # "Flu_Vaccinated_Residents",	
               "RegulatoryID", 
               # "Oxygen",
               # "Oxygen_Concentrators",
@@ -402,7 +400,7 @@ sapply(regionDF, class)
 
 ## MAKE SURE YOU DO THIS
 # # converting certain columns to numeric
-cols = c(8,9,13:23)
+cols = c(8,9,13:21)
 regionDF[, cols] %<>% 
   lapply(function(x) as.numeric(as.character(x)))
 regionDF[regionDF=="--"]<-NA
@@ -447,7 +445,7 @@ sapply(regionDF, class)
 
 glimpse(regionDF)
 
-
+ 
 # ## connect to SQL DB ------
 # 
 SQLusername <- Sys.getenv("sql_username")
@@ -455,7 +453,7 @@ SQLpassword <- Sys.getenv("sql_password")
 # 
 # SQLconn <-odbcConnect("EMResourceCOVID19", uid=SQLusername, pwd=SQLpassword)
 #SQLconn <- odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
-SQLconn <-odbcConnect("CDPHESQP04", uid=SQLusername, pwd=SQLpassword) 
+SQLconn <-odbcConnect("CDPHESQD04", uid=SQLusername, pwd=SQLpassword) 
 serverINFO <-odbcGetInfo(SQLconn) #get odbc db info
 # 
 # # output test 4 ------
@@ -488,7 +486,7 @@ saveData <- function(regionDF) {
 
 saveData(regionDF)
 
-
+ 
 
 #SQLconn <- odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
 # 
@@ -500,4 +498,3 @@ saveData(regionDF)
 sqlQuery(SQLconn,
          "SELECT COUNT(DISTINCT DailyRecordID)
          FROM Event_snapshot_ALR")
-

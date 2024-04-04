@@ -1,8 +1,4 @@
 # Written by Adreanna Early, CDPHE
-# adreanna.early@state.co.us
-#
-setwd("C:/Users/dair/Documents/R Scripts")
-readRenviron("C:/Users/dair/Documents/R Scripts/.Renviron")
 
 #output test 1 ------------
 args = commandArgs(trailingOnly = TRUE)
@@ -22,8 +18,8 @@ pacman::p_load(
   wdman
 )
 
-
-# This block of code is to run if the chrome version won't work after you update to your version below ----
+# Chrome troubleshooting ----
+# This block of code is to run if the chrome version won't work after you update to your version below
 # getChromeDriverVersion <- function(versions = binman::list_versions("chromedriver")) {
 #   if ( xfun::is_unix() ) {
 #     chrome_driver_version <-
@@ -34,7 +30,7 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Chrome )(\\d+\\.){3}")
-# 
+#     
 #     ## on Windows a plattform-specific bug prevents us from calling the Google Chrome binary directly to get its version number
 #     ## cf. https://bugs.chromium.org/p/chromium/issues/detail?id=158372
 #   } else if ( xfun::is_windows() ) {
@@ -44,9 +40,9 @@ pacman::p_load(
 #               stdout = TRUE,
 #               stderr = TRUE) %>%
 #       stringr::str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
-# 
+#     
 #   } else rlang::abort(message = "Your OS couldn't be determined (Linux, macOS, Windows) or is not supported!")
-# 
+#   
 #   # ... and determine most recent ChromeDriver version matching it
 #   chrome_driver_version %>%
 #     magrittr::extract(!is.na(.)) %>%
@@ -72,10 +68,10 @@ pacman::p_load(
 #     v <- length(versions) + 1
 #     while (v && (is.null(rD) || inherits(rD, "condition"))) {
 #       v <- v - 1  # Try each value
-#       rD <<- tryCatch(rsDriver(verbose = verbose,
-#                                port = port + sample(0:1000, 1),
+#       rD <<- tryCatch(rsDriver(verbose = verbose, 
+#                                port = port + sample(0:1000, 1), 
 #                                chromever=versions[v],
-#                                geckover = NULL,
+#                                geckover = NULL, 
 #                                phantomver = NULL), error = function(e) e,
 #                       message = function(m) m)
 #     }
@@ -96,17 +92,17 @@ pacman::p_load(
 # remDr <- getrsDriver()$client
 
 
-
 # starting a Selenium chrome browser ---------
+
 # define some log in variables
 chromever <- Sys.getenv("chrome_version")
 username <- Sys.getenv("juvare_username")
 password <- Sys.getenv("juvare_password")
 
 # connect to chrome
-rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4444L)
+rD <- rsDriver(browser=c("chrome"), chromever=chromever, port = 4585L)
 # check chrome versions:
-# binman::list_versions("chromedriver")
+binman::list_versions("chromedriver")
 # if port blocked or need to use random port, use port = netstat::free_port() 
 
 remDr <- rD[["client"]]
@@ -140,14 +136,14 @@ remDr$navigate("https://emresource.juvare.com/EMSystem?uc=GENERAL&nextStep=menuI
 
 remDr$navigate("https://emresource.juvare.com/EMSystem?uc=REPORT&nextStep=ES_01")
 
-# THE WARNING THE NEXT 3 FUNCTIONS GIVE IS A GOOD WARNING- IT MEANS NO POP-UPS WERE FOUND
+
 e <- simpleError("test error")
 
 tryCatch(
   stop({
     noticeButton <- remDr$findElement(value = "//*[(@id = 'TB_iframeContent')]")
     noticeButton$clickElement()
-  }), 
+    }), 
   error = function(e) e,
   finally =
     message("test done")
@@ -164,6 +160,7 @@ tryCatch(
     message("test done")
 )
 
+# set date range for report ----
 endDate <- remDr$findElement(value = "//*[(@id = 'searchEndDate')]")
 endDate$clearElement()
 endDate$sendKeysToElement(list(format.Date(today(), "%m/%d/%Y"), key = "tab")) 
@@ -171,19 +168,22 @@ endDate$sendKeysToElement(list(format.Date(today(), "%m/%d/%Y"), key = "tab"))
 reportFormat <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[4]/td[2]/input[@value='HTML']")
 reportFormat$clickElement()
 
-Event <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[5]/td[2]/div[23]/input[@value='675217']")
+# Event <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[5]/td[2]/div[23]/input[@value='675216']")
+
+Event <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[5]/td[2]/div[25]/input[@value='675216']")
+
 Event$clickElement()
 
 Next <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[6]/td[2]/input[@value='Next']")
 Next$clickElement()
 
 # if there are multiple radio buttons:
-# EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr[2]/td[1]/input")
-
-# EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr[5]/td[1]/input")
+# EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr[1]/td[1]/input")
+# 
+# EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr[4]/td[1]/input")
 
 # if there is 1 radio button
-EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr/td[1]/input")
+EventSelect <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[2]/td/table/tbody/tr[1]/td[1]/input")
 
 EventSelect$clickElement()
 
@@ -191,11 +191,14 @@ snapshotDate <- remDr$findElement(value = "//*[(@id = 'snapshotDate')]")
 snapshotDate$clearElement()
 snapshotDate$sendKeysToElement(list(format.Date(today(), "%m/%d/%Y"), key = "tab"))
 
+
+
 snapshotHour <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[6]/td[2]/select/option[@value='10']")
 snapshotHour$clickElement()
 
 generateReport <- remDr$findElement(value = "//*[@id='mainContainer']/form/table/tbody/tr[8]/td[2]/input[@value='Generate Report']")
 generateReport$clickElement()
+
 
 # switch to new tab
 myswitch <- function (remDr, windowId) 
@@ -220,13 +223,13 @@ while(!check_handle || count > 20){
 myswitch(remDr, windows_handles[[2]])
 
 #give it time to download
-Sys.sleep(30)
+Sys.sleep(20)
 
 # grab page html -----
-pageALR <- read_html(remDr$getPageSource()[[1]])
+pageSNF <- read_html(remDr$getPageSource()[[1]])
 
 #output test 2 ------
-print(pageALR)
+print(pageSNF)
 
 
 # close and stop the driver/browser -----------
@@ -243,9 +246,9 @@ gc()
 # creating data frame
 # 20 = License # and needs to be character to keep leading zeros
 # rvest custom code doesn't work from command line so will need to add back preceding zeros another way
-# allTables <- page %>% html_nodes(xpath = "//table") %>% html_table(header=TRUE, col_classes=list(`20`='character',`29`='character'))
+# allTables <- page %>% html_nodes(xpath = "//table") %>% html_table(header=TRUE, col_classes=list(`20`='character',`23`='character'))
 
-allTables <- pageALR %>%
+allTables <- pageSNF %>%
   html_nodes(xpath = "//table") %>%
   html_table(header=TRUE)
 
@@ -253,9 +256,8 @@ allTables <- pageALR %>%
 print(allTables[[1]][1])
 
 # data organizing and cleanup ------
-# grabbing only region tables (leaving summary table) and making `Resource Type`  column
-## changed from allTables[c(1:2)] on May 23, 2021 due to what appeared to be erroneous table scraping
-regionTables <- lapply(allTables[c(1:1)], function(x) {
+# grabbing only region tables (leaving summary table) and making new `Resource Type`  column
+regionTables <- lapply(allTables[c(1:12)], function(x) {
   mutate(x, `Resource Type` = colnames(x)[1])
 })
 
@@ -269,7 +271,15 @@ lapply(regionTables, function(x) {
 })
 
 
-## Data elements going into Event_snapshot_ALR table -------------------------------------------------------------------------
+#Storage.prototype.setObject = function(key, value) {
+# this.setItem(key, JSON.stringify(value));
+#}
+
+#Storage.prototype.getObject = function(key) {
+# return JSON.parse(this.getItem(key));
+#}
+
+## Data elements going into Event_snapshot_SNF table -------------------------------------------------------------------------
 # select specific columns from EMResource tables (this is done because some regions have additional data points beyond what we need)
 regionTables <- lapply(regionTables, function(x) {
   select(x,
@@ -300,7 +310,7 @@ regionTables <- lapply(regionTables, function(x) {
          # "Staffing Shortage Other Staff",
          # "Visitation in Place",
          "Current Residents",
-         "Resident Updated Bivalent Doses",
+         "Resident Omicron Bivalent Doses",
          "Up-to-Date Residents",
          "Not Up-to-Date Residents",
          "Not Vaccinated Residents",
@@ -313,8 +323,8 @@ regionTables <- lapply(regionTables, function(x) {
          # "Additional Dose or Booster for Resident",
          # "Current Staff Eligible for Booster",
          # "Additional Dose or Booster for Staff",
-         "Flu Vaccinated Staff",
-         "Flu Vaccinated Residents",
+         # "Flu Vaccinated Staff",
+         # "Flu Vaccinated Residents",
          "License #  (State will populate)",
          # "Oxygen",
          # "Oxygen Concentrators",
@@ -354,7 +364,7 @@ colnames <- c("Resource_facility_name",
               # "Staffing_Shortage_Other_Staff",
               # # "Visitation_in_Place",
               "Current_Total_Residents",
-              "Bivalent_Doses_Residents",
+              "Omicron_Bivalent_Doses_Residents",
               "Up_to_Date_Residents",
               "Not_Up_to_Date_Residents",
               "Not_Vaxxed_Residents",
@@ -367,8 +377,8 @@ colnames <- c("Resource_facility_name",
               # "Addtl_Dose_Booster_Resident",
               # "Current_Staff_Eligible_for_Booster",
               # "Addtl_Dose_Booster_Staff",
-              "Flu_Vaccinated_Staff",
-              "Flu_Vaccinated_Residents",	
+              # "Flu_Vaccinated_Staff",
+              # "Flu_Vaccinated_Residents",	
               "RegulatoryID", 
               # "Oxygen",
               # "Oxygen_Concentrators",
@@ -377,6 +387,9 @@ colnames <- c("Resource_facility_name",
               "Record_date",
               "By_User",
               "Resource_Type")
+
+
+
 
 regionTables <- 
   lapply(regionTables, setNames, colnames)
@@ -388,13 +401,13 @@ regionDF <- as.data.frame(data.table::rbindlist(regionTables))
 regionDF <- filter(regionDF, Resource_facility_name != "Summary")
 
 # extracting snapshot datetime from page header
-snapshotDatetimeHeader <- pageALR %>%
-  html_node(xpath = "/html/body/h2") %>%
+snapshotDatetimeHeader <- pageSNF %>%
+  html_node(xpath = "/html/body/h2") %>% 
   html_text() %>%
   strapplyc("\\d+/\\d+/\\d+\\s+\\d+:\\d+", simplify = TRUE)
 
-# add column for Event_Snapshot_Datetime_ALR
-regionDF <- mutate(regionDF, Event_Snapshot_Datetime_ALR = snapshotDatetimeHeader)
+# add column for Event_Snapshot_Datetime_SNF
+regionDF <- mutate(regionDF, Event_Snapshot_Datetime_SNF = snapshotDatetimeHeader)
 
 # check column classes
 sapply(regionDF, class)
@@ -402,27 +415,27 @@ sapply(regionDF, class)
 
 ## MAKE SURE YOU DO THIS
 # # converting certain columns to numeric
-cols = c(8,9,13:23)
-regionDF[, cols] %<>% 
+cols = c(8,9,13:21)
+regionDF[, cols] %<>%
   lapply(function(x) as.numeric(as.character(x)))
 regionDF[regionDF=="--"]<-NA
 
+
 # converting to datetime
 regionDF$Record_date <- parse_date_time(regionDF$Record_date, c("mdY!_HM", "Y!md_HMS", "dmY!_HM", "db!Y!_HM"))
+
+regionDF$Event_Snapshot_Datetime_SNF2 <- mdy_hm(regionDF$Event_Snapshot_Datetime_SNF)
+
+df <- regionDF[, -27]
+df <- df %>% rename(Event_Snapshot_Datetime_SNF = Event_Snapshot_Datetime_SNF2)
+regionDF <- df
+
 
 # regionDF$First_Vax_Clinic_Date <- parse_date_time(regionDF$First_Vax_Clinic_Date, c("mdY!_HM", "Y!md_HMS", "dmY!_HM", "db!Y!_HM", "m/d/Y!"))
 # 
 # regionDF$Second_Vax_Clinic_Date <- parse_date_time(regionDF$Second_Vax_Clinic_Date, c("mdY!_HM", "Y!md_HMS", "dmY!_HM", "db!Y!_HM", "m/d/Y!"))
 # 
 # regionDF$Third_Vax_Clinic_Date <- parse_date_time(regionDF$Third_Vax_Clinic_Date, c("mdY!_HM", "Y!md_HMS", "dmY!_HM", "db!Y!_HM", "m/d/Y!"))
-
-regionDF$Event_Snapshot_Datetime_ALR <- mdy_hm(regionDF$Event_Snapshot_Datetime_ALR)
-#regionDF$Event_Snapshot_Datetime_ALR2 <- mdy_hm(regionDF$Event_Snapshot_Datetime_ALR)
-
-#df <- regionDF[, -27]
-#df <- df %>% rename(Event_Snapshot_Datetime_ALR = Event_Snapshot_Datetime_ALR2)
-#regionDF <- df
-
 
 # fixing preceeding zeros and converting to character 
 regionDF$RegulatoryID[regionDF$RegulatoryID == ""] <- NA
@@ -447,32 +460,34 @@ sapply(regionDF, class)
 
 glimpse(regionDF)
 
+# library(readr)
+# write_csv(regionDF, '~/EMResource-SQL-Pull/svf.csv', append =T)
 
-# ## connect to SQL DB ------
-# 
+
+## connect to SQL DB ------
 SQLusername <- Sys.getenv("sql_username")
 SQLpassword <- Sys.getenv("sql_password")
-# 
-# SQLconn <-odbcConnect("EMResourceCOVID19", uid=SQLusername, pwd=SQLpassword)
-#SQLconn <- odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
-SQLconn <-odbcConnect("CDPHESQP04", uid=SQLusername, pwd=SQLpassword) 
+
+SQLconn <-odbcConnect("CDPHESQD04", uid=SQLusername, pwd=SQLpassword) 
 serverINFO <-odbcGetInfo(SQLconn) #get odbc db info
-# 
+ 
 # # output test 4 ------
 print(serverINFO)
-# 
-# ## inserting data -----
-# # distinct number of DailyRecordID in Event_snapshot_ALR ==> should be same count as number of all records
-sqlQuery(SQLconn,
-         "SELECT COUNT(DISTINCT DailyRecordID)
-         FROM Event_snapshot_ALR") # 0 records | pulled on Dec 1 2020
 
-## insert data into Event_snapshot_ALR table
+## inserting data -----
+# distinct number of DailyRecordID in Event_snapshot_SNF ==> should be same count as number of all records
+
+
+sqlQuery(SQLconn,"select count(*) from Event_snapshot_SNF")
+
+## insert data into Event_snapshot_SNF table 
 # get data as string and sub ' for ''
-EMResourceData <- paste0(apply(regionDF, 1, function(x) paste0("('", paste(gsub("'","''",x), collapse = "', '"), "')")), collapse = ", ")
+#EMResourceData <- paste0(apply(regionDF, 1, function(x) paste0("('", paste(gsub("'","''",x), collapse = "','"), "')")), collapse = ",")
+
+EMResourceData <- paste0(apply(regionDF, 1, function(x) paste0("('", paste(gsub("'","''",x), collapse = "', '"), "')")), collapse = ",")
 
 saveData <- function(regionDF) {
-  table <- "Event_snapshot_ALR"
+  table <- "Event_snapshot_SNF"
   # Construct the update query by looping over the data fields
   query <- sprintf(
     "INSERT INTO %s (%s) VALUES %s",
@@ -485,19 +500,10 @@ saveData <- function(regionDF) {
   # dbDisconnect(db)
 }
 
-
 saveData(regionDF)
 
 
-
-#SQLconn <- odbcDriverConnect(connection="Driver={ODBC Driver 17 for SQL Server};server=CDPHESQD04;database=EMResourceCOVID19_Dev;trusted_connection=Yes;")
-# 
-#serverINFO <-odbcGetInfo(SQLconn) #get odbc db info
-# 
-# # output test 5 ------
-#print(serverINFO)
-# final records checks
-sqlQuery(SQLconn,
+sqlQuery(SQLconn, 
          "SELECT COUNT(DISTINCT DailyRecordID)
-         FROM Event_snapshot_ALR")
+         FROM EMResourceCOVID19_DEV.dbo.Event_snapshot_SNF;")
 
